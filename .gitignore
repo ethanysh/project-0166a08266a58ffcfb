@@ -112,3 +112,6 @@ mysql/
 
 # credential
 mysql_credential.json
+
+# executable
+.exe
