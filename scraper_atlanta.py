@@ -138,7 +138,7 @@ def click_next(page_row) -> bool:
 
 def scraper_atlanta(chrome_path: str,
                     url='https://aca3.accela.com/Atlanta_Ga/Welcome.aspx',
-                    days_to_scrape=1) -> list:
+                    days_to_scrape=1) -> dict:
     """
     The actual scraping process.
     :param chrome_path: the path in the system where `chromedriver` is stored
@@ -159,20 +159,22 @@ def scraper_atlanta(chrome_path: str,
 
     table_rows = get_table(driver, Element.TABLE_ID.value)
     headers = get_headers(table_rows)
+    permits = dict()
 
     # determine if there are more than 1 page of the results
     if len(table_rows) < TableHTML.HEADER_AND_ABOVE.value \
             + TableHTML.CONTENT_AND_PAGE_NAV.value:  # if there is only 1 page in the result
         content_rows = table_rows[TableHTML.HEADER_AND_ABOVE.value:]
-        permits = scrape_content(headers, content_rows)
+        permit_objs = scrape_content(headers, content_rows)
     else:  # for multiple pages of results
         page_row = table_rows[TableHTML.PAGE_ROW_POSITION.value]
         content_rows = table_rows[TableHTML.HEADER_AND_ABOVE.value:-TableHTML.PAGE_NAV.value]
-        permits = scrape_content(headers, content_rows)
+        permit_objs = scrape_content(headers, content_rows)
         while click_next(page_row):  # click to goto next page and determine if at the last page
             wait_for_staleness(driver, Element.TABLE_ID.value)
             table_rows = get_table(driver, Element.TABLE_ID.value)
             page_row = table_rows[TableHTML.PAGE_ROW_POSITION.value]
             content_rows = table_rows[TableHTML.HEADER_AND_ABOVE.value:-TableHTML.PAGE_NAV.value]
-            permits = permits + scrape_content(headers, content_rows)
+            permit_objs = permit_objs + scrape_content(headers, content_rows)
+    permits["permit"] = permit_objs
     return permits
