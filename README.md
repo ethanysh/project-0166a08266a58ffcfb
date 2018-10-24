@@ -7,3 +7,10 @@ Requirements: https://docs.google.com/document/d/1X3cUs90q9NqqBCW8jR5tCJHqzjKeSu
 ### Chromedriver
 - download chromedriver
 - specify the path of chromedriver in the script
+
+### To use as a module
+```python
+import scraper_atlanta
+
+permits = scraper_atlanta.scraper_atlanta(chrome_path, url, days_to_scrape)
+```
