@@ -22,6 +22,18 @@ class TableHTML(Enum):
     PAGE_ROW_LOCATION = -1  # the last 'tr' tag in table tag contains the page nav
 
 
+def wait_for_stalness(driver, wait_time, element_id):
+    try:
+        is_attached = WebDriverWait(driver, wait_time).until(
+            EC.staleness_of(driver.find_element_by_id(element_id))
+        )
+    except Exception as e:
+        print(e)
+        exit(1)
+    else:
+        return is_attached
+
+
 def wait_for_page_load(driver: webdriver, wait_time: int, by_method, method_val: str):
     try:
         element = WebDriverWait(driver, wait_time).until(
@@ -34,16 +46,12 @@ def wait_for_page_load(driver: webdriver, wait_time: int, by_method, method_val:
         return element
 
 
-def wait_for_stalness(driver, wait_time, element_id):
-    try:
-        is_attached = WebDriverWait(driver, wait_time).until(
-            EC.staleness_of(driver.find_element_by_id(element_id))
-        )
-    except Exception as e:
-        print(e)
-        exit(1)
-    else:
-        return is_attached
+def get_table(driver):
+    # time.sleep(3)
+    element = wait_for_page_load(driver, WAIT_TIME, By.ID, TABLE_ID)
+    table_block = element.find_element_by_tag_name('tbody')
+    table_rows = table_block.find_elements_by_tag_name('tr')
+    return table_rows
 
 
 def scrape_content(content_rows: list) -> list:
@@ -67,14 +75,6 @@ def click_next(page_row) -> bool:
         return False
     else:
         return True
-
-
-def get_table(driver):
-    # time.sleep(3)
-    element = wait_for_page_load(driver, WAIT_TIME, By.ID, TABLE_ID)
-    table_block = element.find_element_by_tag_name('tbody')
-    table_rows = table_block.find_elements_by_tag_name('tr')
-    return table_rows
 
 
 driver = webdriver.Chrome(CHROME_PATH)
