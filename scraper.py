@@ -70,7 +70,7 @@ def click_next(page_row) -> bool:
 
 
 def get_table(driver):
-    time.sleep(3)
+    # time.sleep(3)
     element = wait_for_page_load(driver, WAIT_TIME, By.ID, TABLE_ID)
     table_block = element.find_element_by_tag_name('tbody')
     table_rows = table_block.find_elements_by_tag_name('tr')
@@ -107,6 +107,7 @@ else:
     permits = scrape_content(content_rows)
     # determine if at the last page
     while click_next(page_row):
+        wait_for_stalness(driver, WAIT_TIME, TABLE_ID)
         rows = get_table(driver)
         page_row = rows[TableHTML.PAGE_ROW_LOCATION.value]
         content_rows = rows[TableHTML.NUM_TR_TAG_HEADER_AND_ABOVE.value:-TableHTML.NUM_TR_TAG_AFTER_CONTENT.value]
