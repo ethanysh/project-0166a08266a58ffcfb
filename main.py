@@ -6,7 +6,7 @@ CHROME_PATH = r'C:\Users\ethan\OneDrive\Documents\freelance\chromedriver.exe'
 
 
 def main():
-    permits = scraper_atlanta.scraper_atlanta(CHROME_PATH, URL_TO_SCRAPE, 0)
+    permits = scraper_atlanta.scraper_atlanta(CHROME_PATH, URL_TO_SCRAPE, 1)
     pprint(permits)
 
 

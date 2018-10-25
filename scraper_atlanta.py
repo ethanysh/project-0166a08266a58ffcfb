@@ -27,6 +27,7 @@ class Element(Enum):
     DATE_FROM_XPATH = '//*[@id="ctl00_PlaceHolderMain_generalSearchForm_txtGSStartDate"]'
     SEARCH_BUTTON_XPATH = '//*[@id="ctl00_PlaceHolderMain_btnNewSearch"]'
     TABLE_ID = 'ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList'
+    PAGE_NAV_CLASS = 'aca_pagination'  # class name of page navigation row at the bottom of the
 
 
 def wait_for_staleness(driver, element_id, timeout=10):
@@ -162,8 +163,9 @@ def scraper_atlanta(chrome_path: str,
     permits = dict()
 
     # determine if there are more than 1 page of the results
-    if len(table_rows) < TableHTML.HEADER_AND_ABOVE.value \
-            + TableHTML.CONTENT_AND_PAGE_NAV.value:  # if there is only 1 page in the result
+    try:
+        driver.find_element_by_class_name(Element.PAGE_NAV_CLASS.value)
+    except:  # if there is only 1 page in the result
         content_rows = table_rows[TableHTML.HEADER_AND_ABOVE.value:]
         permit_objs = scrape_content(headers, content_rows)
     else:  # for multiple pages of results
