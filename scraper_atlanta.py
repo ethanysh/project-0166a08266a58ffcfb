@@ -148,16 +148,18 @@ def scraper_atlanta(chrome_path: str,
            The value is defaulted to 1 days.
     :return: The function returns a list of permit object in JSON-like style.
     """
+    # initiate the driver and start the browser
     driver = webdriver.Chrome(chrome_path)
     driver.get(url)
 
-    # Start the browser
+    # navigate the page to content to be scraped
     driver.find_element_by_xpath(Element.BUILDING_TAB_XPATH.value).click()  # click `building` tab
     element = driver.find_element_by_xpath(Element.DATE_FROM_XPATH.value)  # find `date_from` input
     element.send_keys((datetime.today()
                        - timedelta(days=days_to_scrape)).strftime('%m/%d/%Y'))  # enter `date_from`
     driver.find_element_by_xpath(Element.SEARCH_BUTTON_XPATH.value).click()  # click the `search` button
 
+    # get the table to be scraped
     table_rows = get_table(driver, Element.TABLE_ID.value)
     headers = get_headers(table_rows)
     permits = dict()
