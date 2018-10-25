@@ -145,7 +145,7 @@ def scraper_atlanta(chrome_path: str,
     :param chrome_path: the path in the system where `chromedriver` is stored
     :param url: the url of the website to be scraped
     :param days_to_scrape: days prior to today to start scraping. 1 means from yesterday to today, 2 days in total.
-           The value is defaulted to 2 days.
+           The value is defaulted to 1 days.
     :return: The function returns a list of permit object in JSON-like style.
     """
     driver = webdriver.Chrome(chrome_path)
