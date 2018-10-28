@@ -1,12 +1,11 @@
-import scraper_atlanta
+import scraper_cleveland
 from pprint import pprint
 
-URL_TO_SCRAPE = 'https://aca3.accela.com/Atlanta_Ga/Welcome.aspx'
 CHROME_PATH = r'C:\Users\ethan\OneDrive\Documents\freelance\chromedriver.exe'
 
 
 def main():
-    permits = scraper_atlanta.scraper_atlanta(CHROME_PATH, URL_TO_SCRAPE, 1)
+    permits = scraper_cleveland.scraper_cleveland(CHROME_PATH)
     pprint(permits)
 
 
