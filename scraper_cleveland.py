@@ -111,8 +111,6 @@ def scrape_details(driver: webdriver, url) -> dict:
     driver.close()
 
 
-
-
 def scrape_content(driver: webdriver, headers: list, content_rows: list) -> list:
     """
     Get the content of the table
@@ -128,11 +126,10 @@ def scrape_content(driver: webdriver, headers: list, content_rows: list) -> list
         for cell in cells:
             val = cell.text.strip()
             vals.append(val)
-        url = row.find_element_by_tag_name('a').get_attribute('href')
-        obj_detail = scrape_details(driver, url)
-        driver.switch_to_window(driver.window_handles[0])
-        driver.find_element_by_id(Element.TABLE_ID.value)
-        vals.append(datetime.now())
+        url = row.find_element_by_tag_name('a').get_attribute('href')  # get url for the detail page
+        obj_detail = scrape_details(driver, url)  # scrape off the detail page
+        driver.switch_to_window(driver.window_handles[0])  # get back to the table list
+        vals.append(datetime.now())  # add timestamp
         obj = dict(zip(headers, vals))
         # obj.update(obj_detail)
         objs.append(obj)
