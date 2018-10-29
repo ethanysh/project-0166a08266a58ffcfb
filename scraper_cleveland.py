@@ -76,7 +76,7 @@ def basic_clean(text: str) -> str:
     return text.strip().replace('\r\n', ', ').replace('\r', ', ').replace('\n', ', ')
 
 
-def wait_for_staleness(driver, element_id, timeout=120):
+def wait_for_staleness(driver, method: str, method_val: str, timeout=120):
     """
     The function waits until the old web element detaches the DOM after loading a new page. Otherwise, the script won't
     get the new element and the function raises TimeOut Exception.
@@ -85,9 +85,16 @@ def wait_for_staleness(driver, element_id, timeout=120):
     :param timeout: wait a timeout period of time for the web element to detach the DOM, defaulted to 10 seconds.
     :return: raise exceptions and exit or no returns
     """
+    if method == 'id':
+        element = driver.find_element_by_id(method_val)
+    elif method == 'xpath':
+        element = driver.find_element_by_xpath(method_val)
+    else:
+        element = None
+        exit(1)
     try:
         WebDriverWait(driver, timeout).until(
-            EC.staleness_of(driver.find_element_by_id(element_id))
+            EC.staleness_of(element)
         )
     except Exception as e:
         print(e)
@@ -176,6 +183,7 @@ def get_detail(driver: webdriver, detail: str, xpath: str) -> dict:
     :return: returns a dictionary key-value pair of the attribute to scrape
     """
     obj = dict()
+    wait_for_staleness(driver, 'xpath', xpath)
     try:
         element = driver.find_element_by_xpath(xpath)
     except:
@@ -297,7 +305,7 @@ def scraper_cleveland(chrome_path: str,
         content_rows = table_rows[TableHTML.HEADER_AND_ABOVE.value:-TableHTML.PAGE_NAV.value]
         permit_objs = scrape_content(driver, headers, content_rows)
         while click_next(page_row):  # click to goto next page and determine if at the last page
-            wait_for_staleness(driver, Element.TABLE_ID.value)
+            wait_for_staleness(driver, 'id', Element.TABLE_ID.value)
             table_rows = get_table(driver, Element.TABLE_ID.value)
             page_row = table_rows[TableHTML.PAGE_ROW_POSITION.value]
             content_rows = table_rows[TableHTML.HEADER_AND_ABOVE.value:-TableHTML.PAGE_NAV.value]
