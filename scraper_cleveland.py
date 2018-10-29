@@ -13,7 +13,6 @@ class TableHTML(Enum):
     """
     HEADER_AND_ABOVE = 3  # table header and content above has 3 `tr` tags
     PAGE_NAV = 2  # page navigation bar has 2 `tr` tags
-    CONTENT_AND_PAGE_NAV = 12  # maximum table content plus page navigation bar has 12 `tr` tags
     HEADER_ROW_POSITION = 2  # the 3rd 'tr' tag in table tag
     PAGE_ROW_POSITION = -1  # the last 'tr' tag in table tag contains the page nav
     CLICK_BUTTON_POSITION = -1  # the last 'td` tag in the last `tr` tag of the table
@@ -30,18 +29,17 @@ class Element(Enum):
     TABLE_ID = 'ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList'
     PAGE_NAV_CLASS = 'aca_pagination'  # class name of page navigation row at the bottom of the
     UNFOLD_BUTTON_XPATH = '//h1/a[@class="NotShowLoading"]'
-    PERMIT_NUMBER_LINK_XPATH = '//a[contains(@id, "PermitNumber")]'
 
 
 class DetailedHeader(Enum):
     """
-    The class contains attributes of `permit` object on details page.
+    The class contains attributes of an `permit` object on details page.
     """
     STREET_ADDRESS = 'street_address'
     CONSIDERATION = 'consideration'
     GRANTEE = 'grantee'
     DESCRIPTION = 'description'
-    ENTRYDATE = 'entrydate'
+    ENTRY_DATE = 'entrydate'
 
 
 class DetailedElement(Enum):
@@ -57,9 +55,9 @@ class DetailedElement(Enum):
 
 
 DETAILS_MAP = {  # the constant maps the attribute needed to scrape to the referring content xpath
-    DetailedHeader.STREET_ADDRESS.value: DetailedElement.WORK_LOCATION_XPATH.value,
-    DetailedHeader.CONSIDERATION.value: DetailedElement.JOB_VALUE_XPATH.value,
-    DetailedHeader.GRANTEE.value: DetailedElement.OWNER_XPATH.value,
+    DetailedHeader.STREET_ADDRESS.value: [DetailedElement.WORK_LOCATION_XPATH.value],
+    DetailedHeader.CONSIDERATION.value: [DetailedElement.JOB_VALUE_XPATH.value],
+    DetailedHeader.GRANTEE.value: [DetailedElement.OWNER_XPATH.value],
     DetailedHeader.DESCRIPTION.value: [
         DetailedElement.NATURE_OF_JOB_XPATH.value,
         DetailedElement.PROJECT_DESCRIPTION.value,
@@ -155,7 +153,7 @@ def get_table(driver: webdriver, table_id: str) -> list:
 
 def get_headers(rows: list) -> list:
     """
-    Get the headers of the table to be scraped
+    The function gets the headers of the table to be scraped
     :param rows: rows of the table, usually presented in the code as `tr` tags
     :return: returns a list of table header texts
     """
@@ -171,7 +169,7 @@ def get_headers(rows: list) -> list:
 
 def get_detail(driver: webdriver, detail: str, xpath: str) -> dict:
     """
-    Function scrape a specific attribute from a details page
+    The function scrapes a specific attribute from a details page
     :param driver: the webdriver in use
     :param detail: the attribute needed to scrape
     :param xpath: the xpath of the attribute needed to scrape
@@ -192,26 +190,23 @@ def get_detail(driver: webdriver, detail: str, xpath: str) -> dict:
 
 def scrape_details(driver: webdriver, url) -> dict:
     """
-    Function scrape attributes off the details page of each permit
+    The function scrapes all needed attributes off the details page of each permit
     :param driver: the webdriver in use
     :param url: the url of the details page
-    :return: return a JSON-like objedt contains the attributes get from the detail page
+    :return: return a JSON-like object contains the attributes get from the detail page
     """
     obj = dict()
-    driver.execute_script("window.open('');")  # open the detail page in new window
+    driver.execute_script("window.open('');")  # open a new window
     driver.switch_to.window(driver.window_handles[1])
-    driver.get(url)
+    driver.get(url)  # open the details page
     collapses = wait_for_elements_load(driver, By.XPATH, Element.UNFOLD_BUTTON_XPATH.value)  # unfold all sub levels
     for button in collapses:
         button.click()
-    details = list(DETAILS_MAP.keys())  # get the attributes and the referring content from a map constant
+    details = list(DETAILS_MAP.keys())  # get the attributes and the referring content locator from a dict constant
     for detail in details:
         xpath = DETAILS_MAP[detail]
-        if type(xpath) is list:
-            for path in xpath:
-                obj.update(get_detail(driver, detail, path))
-        else:
-            obj.update(get_detail(driver, detail, xpath))
+        for path in xpath:
+            obj.update(get_detail(driver, detail, path))
     # time.sleep(3)
     driver.close()
     return obj
@@ -235,15 +230,15 @@ def scrape_content(driver: webdriver, headers: list, content_rows: list) -> list
             vals.append(val)
         url_cell = row.find_elements_by_tag_name('td')[TableHTML.URL_CELL_POSITION.value]
         try:
-            url = url_cell.find_element_by_tag_name('a').get_attribute('href')  # get url for the detail page
+            url = url_cell.find_element_by_tag_name('a').get_attribute('href')  # get the url for the detail page
         except:
-            pass
+            pass  # pass to the next permit if details page is not available
         else:
             obj_detail = scrape_details(driver, url)  # scrape off the detail page
             driver.switch_to_window(driver.window_handles[0])  # get back to the table list
         obj = dict(zip(headers, vals))
         obj.update(obj_detail)
-        obj.update({DetailedHeader.ENTRYDATE.value: datetime.now()})  # add timestamp
+        obj.update({DetailedHeader.ENTRY_DATE.value: datetime.now()})  # add timestamp
         objs.append(obj)
     return objs
 
