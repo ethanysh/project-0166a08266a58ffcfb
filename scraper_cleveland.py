@@ -77,7 +77,7 @@ def basic_clean(text: str) -> str:
     return text.strip().replace('\r\n', ', ').replace('\r', ', ').replace('\n', ', ')
 
 
-def wait_for_staleness(driver, method: str, method_val: str, timeout=120):
+def wait_for_staleness(driver, element_id, timeout=120):
     """
     The function waits until the old web element detaches the DOM after loading a new page. Otherwise, the script won't
     get the new element and the function raises TimeOut Exception.
@@ -86,16 +86,9 @@ def wait_for_staleness(driver, method: str, method_val: str, timeout=120):
     :param timeout: wait a timeout period of time for the web element to detach the DOM, defaulted to 10 seconds.
     :return: raise exceptions and exit or no returns
     """
-    if method == 'id':
-        element = driver.find_element_by_id(method_val)
-    elif method == 'xpath':
-        element = driver.find_element_by_xpath(method_val)
-    else:
-        element = None
-        exit(1)
     try:
         WebDriverWait(driver, timeout).until(
-            EC.staleness_of(element)
+            EC.staleness_of(driver.find_element_by_id(element_id))
         )
     except Exception as e:
         print(e)
@@ -184,7 +177,6 @@ def get_detail(driver: webdriver, detail: str, xpath: str) -> dict:
     :return: returns a dictionary key-value pair of the attribute to scrape
     """
     obj = dict()
-    wait_for_staleness(driver, 'xpath', xpath)
     try:
         element = driver.find_element_by_xpath(xpath)
     except:
@@ -211,12 +203,12 @@ def scrape_details(driver: webdriver, url) -> dict:
     collapses = wait_for_elements_load(driver, By.XPATH, Element.UNFOLD_BUTTON_XPATH.value)  # unfold all sub levels
     for button in collapses:
         button.click()
+        time.sleep(1)  # wait for element load
     details = list(DETAILS_MAP.keys())  # get the attributes and the referring content locator from a dict constant
     for detail in details:
         xpath = DETAILS_MAP[detail]
         for path in xpath:
             obj.update(get_detail(driver, detail, path))
-    # time.sleep(3)
     driver.close()
     return obj
 
@@ -248,12 +240,12 @@ def scrape_content(driver: webdriver, headers: list, content_rows: list) -> list
         obj = dict(zip(headers, vals))
         obj.update(obj_detail)
         obj.update({DetailedHeader.ENTRY_DATE.value: datetime.now()})  # add timestamp
-        with open('test3.txt') as f:
+        with open('test3.txt', 'at') as f:
             pprint(obj, stream=f)
-        f.close()
         print(datetime.now())
         pprint(obj)
         objs.append(obj)
+        time.sleep(3)  # wait until elements in details page detaches the DOM
     return objs
 
 
@@ -311,7 +303,7 @@ def scraper_cleveland(chrome_path: str,
         content_rows = table_rows[TableHTML.HEADER_AND_ABOVE.value:-TableHTML.PAGE_NAV.value]
         permit_objs = scrape_content(driver, headers, content_rows)
         while click_next(page_row):  # click to goto next page and determine if at the last page
-            wait_for_staleness(driver, 'id', Element.TABLE_ID.value)
+            wait_for_staleness(driver, Element.TABLE_ID.value)
             table_rows = get_table(driver, Element.TABLE_ID.value)
             page_row = table_rows[TableHTML.PAGE_ROW_POSITION.value]
             content_rows = table_rows[TableHTML.HEADER_AND_ABOVE.value:-TableHTML.PAGE_NAV.value]
