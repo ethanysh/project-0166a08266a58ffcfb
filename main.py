@@ -2,7 +2,7 @@ import scraper_cleveland
 from pprint import pprint
 
 CHROME_PATH = r'C:\Users\ethan\OneDrive\Documents\freelance\chromedriver.exe'
-URL='https://ca.permitcleveland.org/public/welcome.aspx'
+URL = 'https://ca.permitcleveland.org/public/welcome.aspx'
 
 
 def main():
