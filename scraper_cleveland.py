@@ -17,6 +17,7 @@ class TableHTML(Enum):
     HEADER_ROW_POSITION = 2  # the 3rd 'tr' tag in table tag
     PAGE_ROW_POSITION = -1  # the last 'tr' tag in table tag contains the page nav
     CLICK_BUTTON_POSITION = -1  # the last 'td` tag in the last `tr` tag of the table
+    URL_CELL_POSITION = 2  # the cell in the table contains url of the detail page is in the 3rd column
 
 
 class Element(Enum):
@@ -28,10 +29,56 @@ class Element(Enum):
     SEARCH_BUTTON_XPATH = '//*[@id="ctl00_PlaceHolderMain_btnNewSearch"]'
     TABLE_ID = 'ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList'
     PAGE_NAV_CLASS = 'aca_pagination'  # class name of page navigation row at the bottom of the
-    # URL_PREFIX = 'https://ca.permitcleveland.org'
+    UNFOLD_BUTTON_XPATH = '//h1/a[@class="NotShowLoading"]'
+    PERMIT_NUMBER_LINK_XPATH = '//a[contains(@id, "PermitNumber")]'
 
 
-def wait_for_staleness(driver, element_id, timeout=10):
+class DetailedHeader(Enum):
+    """
+    The class contains attributes of `permit` object on details page.
+    """
+    STREET_ADDRESS = 'street_address'
+    CONSIDERATION = 'consideration'
+    GRANTEE = 'grantee'
+    DESCRIPTION = 'description'
+    ENTRYDATE = 'entrydate'
+
+
+class DetailedElement(Enum):
+    """
+    The class contains value of html attributes for permit attributes on the detail page of each.
+    """
+    WORK_LOCATION_XPATH = '//*[@id="divWorkLocationDetail"]'
+    OWNER_XPATH = '//div[h1="Owner:"]/span'
+    JOB_VALUE_XPATH = '//div[span="Job Value($):"]/span[2]'
+    NATURE_OF_JOB_XPATH = '//div[span="Nature of Job Desc: "]/following-sibling::div'
+    PROJECT_DESCRIPTION = '//div[h1="Project Description:"]/span'
+    DESCRIPTIVE_NATURE_XPATH = '//div[span="Descriptive nature of complaint: "]/following-sibling::div'
+
+
+DETAILS_MAP = {  # the constant maps the attribute needed to scrape to the referring content xpath
+    DetailedHeader.STREET_ADDRESS.value: DetailedElement.WORK_LOCATION_XPATH.value,
+    DetailedHeader.CONSIDERATION.value: DetailedElement.JOB_VALUE_XPATH.value,
+    DetailedHeader.GRANTEE.value: DetailedElement.OWNER_XPATH.value,
+    DetailedHeader.DESCRIPTION.value: [
+        DetailedElement.NATURE_OF_JOB_XPATH.value,
+        DetailedElement.PROJECT_DESCRIPTION.value,
+        DetailedElement.DESCRIPTIVE_NATURE_XPATH.value
+    ]
+}
+
+
+def basic_clean(text: str) -> str:
+    """
+    Function do a basic clean of the text scraped off the web site, including strip the text off whitespaces,
+    linebreaks, ect.
+    :param text: input the text to be cleaned
+    :return: return the cleaned text
+    """
+    return text.strip().replace('\r\n', ', ').replace('\r', ', ').replace('\n', ', ')
+
+
+def wait_for_staleness(driver, element_id, timeout=60):
     """
     The function waits until the old web element detaches the DOM after loading a new page. Otherwise, the script won't
     get the new element and the function raises TimeOut Exception.
@@ -49,7 +96,7 @@ def wait_for_staleness(driver, element_id, timeout=10):
         exit(1)
 
 
-def wait_for_page_load(driver: webdriver, by_method: By, method_val: str, timeout=10) -> webdriver:
+def wait_for_element_load(driver: webdriver, by_method: By, method_val: str, timeout=60) -> webdriver:
     """
     The function waits until the expected web element presented in the page to proceed to next
     :param driver: the web driver in use
@@ -70,6 +117,27 @@ def wait_for_page_load(driver: webdriver, by_method: By, method_val: str, timeou
         return element
 
 
+def wait_for_elements_load(driver: webdriver, by_method: By, method_val: str, timeout=60) -> list:
+    """
+    The function waits until the expected web element presented in the page to proceed to next
+    :param driver: the web driver in use
+    :param by_method: a `By` object used to locate the desired web element in by different method
+    :param method_val: the values of the `By` method
+    :param timeout: wait a timeout period of time for the web element to be presented in the page,
+                    defaulted to 10 seconds.
+    :return: raise exceptions or return the element be waited on
+    """
+    try:
+        elements = WebDriverWait(driver, timeout).until(
+           EC.presence_of_all_elements_located((by_method, method_val))
+        )
+    except Exception as e:
+        print(e)
+        exit(1)
+    else:
+        return elements
+
+
 def get_table(driver: webdriver, table_id: str) -> list:
     """
     The function gets the table to be scraped by `talbe_id`.
@@ -80,7 +148,7 @@ def get_table(driver: webdriver, table_id: str) -> list:
     :return: function returns a list of row elements int the table, represented by `tr` tags
     """
     # time.sleep(3)
-    element = wait_for_page_load(driver, By.ID, table_id)
+    element = wait_for_element_load(driver, By.ID, table_id)
     table_rows = element.find_elements_by_tag_name('tr')
     return table_rows
 
@@ -98,17 +166,55 @@ def get_headers(rows: list) -> list:
         val = header.text.strip()
         if val not in [None, '']:
             headers.append(val)
-    headers.append('entrydate')
     return headers
 
 
+def get_detail(driver: webdriver, detail: str, xpath: str) -> dict:
+    """
+    Function scrape a specific attribute from a details page
+    :param driver: the webdriver in use
+    :param detail: the attribute needed to scrape
+    :param xpath: the xpath of the attribute needed to scrape
+    :return: returns a dictionary key-value pair of the attribute to scrape
+    """
+    obj = dict()
+    try:
+        element = driver.find_element_by_xpath(xpath)
+    except:
+        pass
+    else:
+        val = basic_clean(element.text)
+        if '$' in val:  # for `consideration` attribute, convert to float number
+            val = float(val.replace('$', '').replace(',', ''))
+        obj[detail] = val
+    return obj
+
+
 def scrape_details(driver: webdriver, url) -> dict:
-    driver.execute_script("window.open('');")
+    """
+    Function scrape attributes off the details page of each permit
+    :param driver: the webdriver in use
+    :param url: the url of the details page
+    :return: return a JSON-like objedt contains the attributes get from the detail page
+    """
+    obj = dict()
+    driver.execute_script("window.open('');")  # open the detail page in new window
     driver.switch_to.window(driver.window_handles[1])
     driver.get(url)
-
-    time.sleep(3)
+    collapses = wait_for_elements_load(driver, By.XPATH, Element.UNFOLD_BUTTON_XPATH.value)  # unfold all sub levels
+    for button in collapses:
+        button.click()
+    details = list(DETAILS_MAP.keys())  # get the attributes and the referring content from a map constant
+    for detail in details:
+        xpath = DETAILS_MAP[detail]
+        if type(xpath) is list:
+            for path in xpath:
+                obj.update(get_detail(driver, detail, path))
+        else:
+            obj.update(get_detail(driver, detail, xpath))
+    # time.sleep(3)
     driver.close()
+    return obj
 
 
 def scrape_content(driver: webdriver, headers: list, content_rows: list) -> list:
@@ -120,18 +226,24 @@ def scrape_content(driver: webdriver, headers: list, content_rows: list) -> list
     :return: returns a list of permit object in dictionary type
     """
     objs = []
+    obj_detail = dict()
     for row in content_rows:
         cells = row.find_elements_by_tag_name('span')
         vals = []
         for cell in cells:
-            val = cell.text.strip()
+            val = basic_clean(cell.text)
             vals.append(val)
-        url = row.find_element_by_tag_name('a').get_attribute('href')  # get url for the detail page
-        obj_detail = scrape_details(driver, url)  # scrape off the detail page
-        driver.switch_to_window(driver.window_handles[0])  # get back to the table list
-        vals.append(datetime.now())  # add timestamp
+        url_cell = row.find_elements_by_tag_name('td')[TableHTML.URL_CELL_POSITION.value]
+        try:
+            url = url_cell.find_element_by_tag_name('a').get_attribute('href')  # get url for the detail page
+        except:
+            pass
+        else:
+            obj_detail = scrape_details(driver, url)  # scrape off the detail page
+            driver.switch_to_window(driver.window_handles[0])  # get back to the table list
         obj = dict(zip(headers, vals))
-        # obj.update(obj_detail)
+        obj.update(obj_detail)
+        obj.update({DetailedHeader.ENTRYDATE.value: datetime.now()})  # add timestamp
         objs.append(obj)
     return objs
 
