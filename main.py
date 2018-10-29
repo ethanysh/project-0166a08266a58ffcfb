@@ -6,7 +6,7 @@ URL='https://ca.permitcleveland.org/public/welcome.aspx'
 
 
 def main():
-    permits = scraper_cleveland.scraper_cleveland(CHROME_PATH, URL, 3)
+    permits = scraper_cleveland.scraper_cleveland(CHROME_PATH, URL)
     pprint(permits)
 
 
