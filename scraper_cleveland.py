@@ -76,7 +76,7 @@ def basic_clean(text: str) -> str:
     return text.strip().replace('\r\n', ', ').replace('\r', ', ').replace('\n', ', ')
 
 
-def wait_for_staleness(driver, element_id, timeout=60):
+def wait_for_staleness(driver, element_id, timeout=120):
     """
     The function waits until the old web element detaches the DOM after loading a new page. Otherwise, the script won't
     get the new element and the function raises TimeOut Exception.
@@ -94,7 +94,7 @@ def wait_for_staleness(driver, element_id, timeout=60):
         exit(1)
 
 
-def wait_for_element_load(driver: webdriver, by_method: By, method_val: str, timeout=60) -> webdriver:
+def wait_for_element_load(driver: webdriver, by_method: By, method_val: str, timeout=120) -> webdriver:
     """
     The function waits until the expected web element presented in the page to proceed to next
     :param driver: the web driver in use
@@ -115,7 +115,7 @@ def wait_for_element_load(driver: webdriver, by_method: By, method_val: str, tim
         return element
 
 
-def wait_for_elements_load(driver: webdriver, by_method: By, method_val: str, timeout=60) -> list:
+def wait_for_elements_load(driver: webdriver, by_method: By, method_val: str, timeout=120) -> list:
     """
     The function waits until the expected web element presented in the page to proceed to next
     :param driver: the web driver in use
