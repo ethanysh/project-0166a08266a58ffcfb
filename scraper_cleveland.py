@@ -183,7 +183,10 @@ def get_detail(driver: webdriver, detail: str, xpath: str) -> dict:
     else:
         val = basic_clean(element.text)
         if detail == DetailedHeader.CONSIDERATION.value:  # for `consideration` attribute, convert to float number
-            val = float(val.replace('$', '').replace(',', ''))
+            try:
+                val = float(val.replace('$', '').replace(',', ''))
+            except ValueError:
+                val = 0
         obj[detail] = val
     return obj
 
@@ -202,6 +205,7 @@ def scrape_details(driver: webdriver, url) -> dict:
     collapses = wait_for_elements_load(driver, By.XPATH, Element.UNFOLD_BUTTON_XPATH.value)  # unfold all sub levels
     for button in collapses:
         button.click()
+        time.sleep(1)  # wait for hidden content reveals
     details = list(DETAILS_MAP.keys())  # get the attributes and the referring content locator from a dict constant
     for detail in details:
         xpath = DETAILS_MAP[detail]
