@@ -4,6 +4,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime, timedelta
 from enum import Enum
+from pprint import pprint
 import time
 
 
@@ -195,7 +196,7 @@ def scrape_details(driver: webdriver, url) -> dict:
     Function scrape attributes off the details page of each permit
     :param driver: the webdriver in use
     :param url: the url of the details page
-    :return: return a JSON-like objedt contains the attributes get from the detail page
+    :return: return a JSON-like object contains the attributes get from the detail page
     """
     obj = dict()
     driver.execute_script("window.open('');")  # open the detail page in new window
@@ -244,6 +245,11 @@ def scrape_content(driver: webdriver, headers: list, content_rows: list) -> list
         obj = dict(zip(headers, vals))
         obj.update(obj_detail)
         obj.update({DetailedHeader.ENTRYDATE.value: datetime.now()})  # add timestamp
+        with open('test1.txt', 'at') as out:
+            pprint(obj, stream=out)
+        out.close()
+        print(datetime.now())
+        pprint(obj)
         objs.append(obj)
     return objs
 
