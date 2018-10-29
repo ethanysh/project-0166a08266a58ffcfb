@@ -184,7 +184,10 @@ def get_detail(driver: webdriver, detail: str, xpath: str) -> dict:
     else:
         val = basic_clean(element.text)
         if detail == DetailedHeader.CONSIDERATION.value:  # for `consideration` attribute, convert to float number
-            val = float(val.replace('$', '').replace(',', ''))
+            try:
+                val = float(val.replace('$', '').replace(',', ''))
+            except ValueError:
+                val = 0
         obj[detail] = val
     return obj
 
