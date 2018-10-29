@@ -240,11 +240,6 @@ def scrape_content(driver: webdriver, headers: list, content_rows: list) -> list
         obj = dict(zip(headers, vals))
         obj.update(obj_detail)
         obj.update({DetailedHeader.ENTRY_DATE.value: datetime.now()})  # add timestamp
-        with open('test2.txt', 'at') as f:
-            pprint(obj, stream=f)
-        f.close()
-        print(datetime.now())
-        pprint(obj)
         objs.append(obj)
     return objs
 
