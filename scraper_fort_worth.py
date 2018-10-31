@@ -16,7 +16,7 @@ class TableHTML(Enum):
     HEADER_ROW_POSITION = 2  # the 3rd 'tr' tag in table tag
     PAGE_ROW_POSITION = -1  # the last 'tr' tag in table tag contains the page nav
     CLICK_BUTTON_POSITION = -1  # the last 'td` tag in the last `tr` tag of the table
-    URL_CELL_POSITION = 2  # the cell in the table contains url of the detail page is in the 3rd column
+    URL_CELL_POSITION = 3  # the cell in the table contains url of the detail page is in the 4th column
 
 
 class Element(Enum):
