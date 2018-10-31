@@ -16,7 +16,11 @@ class TableHTML(Enum):
     HEADER_ROW_POSITION = 2  # the 3rd 'tr' tag in table tag
     PAGE_ROW_POSITION = -1  # the last 'tr' tag in table tag contains the page nav
     CLICK_BUTTON_POSITION = -1  # the last 'td` tag in the last `tr` tag of the table
-    URL_CELL_POSITION = 3  # the cell in the table contains url of the detail page is in the 4th column
+    HEADER_START = 1  # the header starts from the 2nd `th` tag of the header row
+    HEADER_END = -1  # the header ends at the 2nd last `th` tag of the header row
+    CONTENT_START = 1  # the content starts from the 2nd `td` tag of the table row
+    CONTENT_END = -1  # the content ends at the 2nd last `td` tag of the table row
+    URL_CELL_POSITION = 2  # the cell contains url of the detail page is in the 3rd `td` tag of the content
 
 
 class Element(Enum):
@@ -165,7 +169,8 @@ def get_headers(rows: list) -> list:
     """
     headers = []
     headers_code = rows[TableHTML.HEADER_ROW_POSITION.value]
-    headers_text = headers_code.find_elements_by_tag_name("span")
+    headers_text = headers_code.find_elements_by_tag_name('th')[TableHTML.HEADER_START.value:
+                                                                TableHTML.HEADER_END.value]
     for header in headers_text:
         val = header.text.strip()
         if val not in [None, '']:
@@ -235,7 +240,8 @@ def scrape_content(driver: webdriver, headers: list, content_rows: list) -> list
     objs = []
     obj_detail = dict()
     for row in content_rows:
-        cells = row.find_elements_by_tag_name('td')
+        cells = row.find_elements_by_tag_name('td')[TableHTML.CONTENT_START.value:
+                                                    TableHTML.CONTENT_END.value]
         vals = []
         for cell in cells:
             val = basic_clean(cell.text)
