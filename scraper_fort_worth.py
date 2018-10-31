@@ -39,8 +39,6 @@ class DetailedHeader(Enum):
     The class contains attributes of a `permit` object on details page.
     """
     STREET_ADDRESS = 'street_address'
-    CITY = 'city'
-    STATE = 'state'
     CONSIDERATION = 'consideration'
     GRANTEE = 'grantee'
     DESCRIPTION = 'description'
