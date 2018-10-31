@@ -58,8 +58,6 @@ class DetailedElement(Enum):
     NATURE_OF_JOB_XPATH = '//div[span="Nature of Job Desc: "]/following-sibling::div'
     PROJECT_DESCRIPTION = '//div[h1="Project Description:"]/span'
     DESCRIPTIVE_NATURE_XPATH = '//div[span="Descriptive nature of complaint: "]/following-sibling::div'
-    CITY_NAME = 'Fort Worth'
-    STATE_NAME = 'TX'
 
 
 DETAILS_MAP = {  # the constant maps the attribute needed to scrape to the referring content xpath
@@ -222,8 +220,6 @@ def scrape_details(driver: webdriver, url) -> dict:
         xpath = DETAILS_MAP[detail]
         for path in xpath:
             obj.update(get_detail(driver, detail, path))
-    obj.update({DetailedHeader.CITY.value: DetailedElement.CITY_NAME.value,
-                DetailedHeader.STATE.value: DetailedElement.STATE_NAME.value})
     # time.sleep(3)
     driver.close()
     return obj
