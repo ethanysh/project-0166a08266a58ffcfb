@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
 from datetime import datetime, timedelta
 from enum import Enum
 import time
@@ -32,6 +33,7 @@ class Element(Enum):
     TABLE_ID = 'ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList'
     PAGE_NAV_CLASS = 'aca_pagination'  # class name of page navigation row at the bottom of the
     UNFOLD_BUTTON_XPATH = '//h1/a[@class="NotShowLoading"]'
+    NEXT_BUTTON_XPATH = '//a[contains(text(), "Next >")]'
 
 
 class DetailedHeader(Enum):
@@ -254,16 +256,19 @@ def scrape_content(driver: webdriver, headers: list, content_rows: list) -> list
     return objs
 
 
-def click_next(page_row) -> bool:
+def click_next(page_row, driver: webdriver) -> bool:
     """
     The function clicks the `next` button located in the lower right conner of the page to get table content
     in the next page. The function also returns the clickability of the next button to determine if at the last page.
+    :param driver: the webdriver in use
     :param page_row: the row element contains the page navigation bar in html
     :return: return if the next button is still clickable
     """
-    next_button = page_row.find_elements_by_tag_name('td')[TableHTML.CLICK_BUTTON_POSITION.value]
+    next_button = page_row.find_element_by_xpath('//a[contains(text(), "Next >")]')
+    actions = ActionChains(driver)
+    actions.move_to_element(next_button).perform()
     try:
-        next_button.find_element_by_tag_name('a').click()
+        next_button.click()
     except Exception as e:
         return False
     else:
@@ -308,7 +313,7 @@ def scraper_fort_worth(chrome_path: str,
         page_row = table_rows[TableHTML.PAGE_ROW_POSITION.value]
         content_rows = table_rows[TableHTML.HEADER_AND_ABOVE.value:-TableHTML.PAGE_NAV.value]
         permit_objs = scrape_content(driver, headers, content_rows)
-        while click_next(page_row):  # click to goto next page and determine if at the last page
+        while click_next(page_row, driver):  # click to goto next page and determine if at the last page
             wait_for_staleness(driver, Element.TABLE_ID.value)
             table_rows = get_table(driver, Element.TABLE_ID.value)
             page_row = table_rows[TableHTML.PAGE_ROW_POSITION.value]
