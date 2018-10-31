@@ -59,7 +59,6 @@ class DetailedElement(Enum):
 
 
 DETAILS_MAP = {  # the constant maps the attribute needed to scrape to the referring content xpath
-    DetailedHeader.STREET_ADDRESS.value: [DetailedElement.WORK_LOCATION_XPATH.value],
     DetailedHeader.CONSIDERATION.value: [DetailedElement.JOB_VALUE_XPATH.value],
     DetailedHeader.GRANTEE.value: [
         DetailedElement.OWNER_XPATH.value,
