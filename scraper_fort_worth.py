@@ -28,6 +28,7 @@ class Element(Enum):
     TABLE_ID = 'ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList'
     PAGE_NAV_CLASS = 'aca_pagination'  # class name of page navigation row at the bottom of the
     UNFOLD_BUTTON_XPATH = '//h1/a[@class="NotShowLoading"]'
+    CONTENT_CELL_XPATH = '//td[@class="ACA_AlignLeftOrRightTop"]'
 
 
 class DetailedHeader(Enum):
@@ -235,7 +236,7 @@ def scrape_content(driver: webdriver, headers: list, content_rows: list) -> list
     objs = []
     obj_detail = dict()
     for row in content_rows:
-        cells = row.find_elements_by_tag_name('span')
+        cells = row.find_elements_by_xpath(Element.CONTENT_CELL_XPATH.value)
         vals = []
         for cell in cells:
             val = basic_clean(cell.text)
