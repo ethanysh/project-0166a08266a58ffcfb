@@ -82,7 +82,7 @@ def wait_for_staleness(driver, element_id, timeout=120):
     get the new element and the function raises TimeOut Exception.
     :param driver: the web driver in use
     :param element_id: the id of the web element to be inspected
-    :param timeout: wait a timeout period of time for the web element to detach the DOM, defaulted to 10 seconds.
+    :param timeout: wait a timeout period of time for the web element to detach the DOM, defaulted to 120 seconds.
     :return: raise exceptions and exit or no returns
     """
     try:
@@ -101,7 +101,7 @@ def wait_for_element_load(driver: webdriver, by_method: By, method_val: str, tim
     :param by_method: a `By` object used to locate the desired web element in by different method
     :param method_val: the values of the `By` method
     :param timeout: wait a timeout period of time for the web element to be presented in the page,
-                    defaulted to 10 seconds.
+                    defaulted to 120 seconds.
     :return: raise exceptions or return the element be waited on
     """
     try:
@@ -117,12 +117,12 @@ def wait_for_element_load(driver: webdriver, by_method: By, method_val: str, tim
 
 def wait_for_elements_load(driver: webdriver, by_method: By, method_val: str, timeout=120) -> list:
     """
-    The function waits until the expected web element presented in the page to proceed to next
+    The function waits until all the expected web elements presented in the page to proceed to next
     :param driver: the web driver in use
     :param by_method: a `By` object used to locate the desired web element in by different method
     :param method_val: the values of the `By` method
     :param timeout: wait a timeout period of time for the web element to be presented in the page,
-                    defaulted to 10 seconds.
+                    defaulted to 120 seconds.
     :return: raise exceptions or return the element be waited on
     """
     try:
