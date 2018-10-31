@@ -28,7 +28,6 @@ class Element(Enum):
     TABLE_ID = 'ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList'
     PAGE_NAV_CLASS = 'aca_pagination'  # class name of page navigation row at the bottom of the
     UNFOLD_BUTTON_XPATH = '//h1/a[@class="NotShowLoading"]'
-    CONTENT_CELL_XPATH = '//td[@class="ACA_AlignLeftOrRightTop"]'
 
 
 class DetailedHeader(Enum):
@@ -236,12 +235,12 @@ def scrape_content(driver: webdriver, headers: list, content_rows: list) -> list
     objs = []
     obj_detail = dict()
     for row in content_rows:
-        cells = row.find_elements_by_xpath(Element.CONTENT_CELL_XPATH.value)
+        cells = row.find_elements_by_tag_name('td')
         vals = []
         for cell in cells:
             val = basic_clean(cell.text)
             vals.append(val)
-        url_cell = row.find_elements_by_tag_name('td')[TableHTML.URL_CELL_POSITION.value]
+        url_cell = cells[TableHTML.URL_CELL_POSITION.value]
         try:
             url = url_cell.find_element_by_tag_name('a').get_attribute('href')  # get the url for the detail page
         except:
