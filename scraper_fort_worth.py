@@ -32,7 +32,7 @@ class Element(Enum):
     TABLE_ID = 'ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList'
     PAGE_NAV_CLASS = 'aca_pagination'  # class name of page navigation row at the bottom of the
     UNFOLD_BUTTON_XPATH = '//h1/a[@class="NotShowLoading"]'
-    NEXT_BUTTON_XPATH = '//a[contains(text(), "Next >")]'
+    NEXT_BUTTON_XPATH = '//[contains(text(), "Next >")]'
 
 
 class DetailedHeader(Enum):
@@ -263,7 +263,7 @@ def click_next(page_row, driver: webdriver) -> bool:
     :param page_row: the row element contains the page navigation bar in html
     :return: return if the next button is still clickable
     """
-    next_button = page_row.find_element_by_xpath('//a[contains(text(), "Next >")]')
+    next_button = page_row.find_element_by_xpath(Element.NEXT_BUTTON_XPATH.value)
     actions = ActionChains(driver)
     actions.move_to_element(next_button).perform()
     try:
