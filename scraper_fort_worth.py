@@ -21,6 +21,7 @@ class TableHTML(Enum):
     CONTENT_START = 1  # the content starts from the 2nd `td` tag of the table row
     CONTENT_END = -1  # the content ends at the 2nd last `td` tag of the table row
     URL_CELL_POSITION = 2  # the cell contains url of the detail page is in the 3rd `td` tag of the content
+    NEXT_BUTTON_POSITION = -1  # the last 'td` tag in the last `tr` tag of the table
 
 
 class Element(Enum):
@@ -263,11 +264,11 @@ def click_next(page_row, driver: webdriver) -> bool:
     :param page_row: the row element contains the page navigation bar in html
     :return: return if the next button is still clickable
     """
-    next_button = page_row.find_element_by_xpath(Element.NEXT_BUTTON_XPATH.value)
+    next_button = page_row.find_elements_by_tag_name('td')[TableHTML.NEXT_BUTTON_POSITION.value]
     actions = ActionChains(driver)
     actions.move_to_element(next_button).perform()
     try:
-        next_button.click()
+        next_button.find_element_by_tag_name('a').click()
     except Exception as e:
         return False
     else:
