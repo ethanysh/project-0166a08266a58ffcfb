@@ -278,13 +278,13 @@ def scraper_fort_worth(chrome_path: str,
                        url='https://accela.fortworthtexas.gov/CitizenAccess/Cap/CapHome.aspx?module=Development&TabName'
                            '=Development&TabList=Home%7C0%7CDevelopment%7C1%7CFire%7C2%7CGasWell%7C3%7CPlanning%7C4%7C'
                            'Licenses%7C5%7CStreetUse%7C6%7CInfrastructure%7C7%7CCurrentTabIndex%7C1',
-                       days_to_scrape=1) -> dict:
+                       days_to_scrape=0) -> dict:
     """
     The actual scraping process.
     :param chrome_path: the path in the system where `chromedriver` is stored
     :param url: the url of the website to be scraped
     :param days_to_scrape: days prior to today to start scraping. 1 means from yesterday to today, 2 days in total.
-           The value is defaulted to scrape the data from yesterday to today.
+           The value is defaulted to scrape the data for only 1 day, that is today only.
     :return: The function returns a list of permit object in JSON-like style.
     """
     # initiate the driver and start the browser
