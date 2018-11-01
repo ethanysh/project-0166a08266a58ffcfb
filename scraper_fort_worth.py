@@ -16,7 +16,6 @@ class TableHTML(Enum):
     PAGE_NAV = 2  # page navigation bar has 2 `tr` tags
     HEADER_ROW_POSITION = 2  # the 3rd 'tr' tag in table tag
     PAGE_ROW_POSITION = -1  # the last 'tr' tag in table tag contains the page nav
-    CLICK_BUTTON_POSITION = -1  # the last 'td` tag in the last `tr` tag of the table
     HEADER_START = 1  # the header starts from the 2nd `th` tag of the header row
     HEADER_END = -1  # the header ends at the 2nd last `th` tag of the header row
     CONTENT_START = 1  # the content starts from the 2nd `td` tag of the table row
