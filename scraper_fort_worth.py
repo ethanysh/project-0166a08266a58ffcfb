@@ -32,7 +32,7 @@ class Element(Enum):
     TABLE_ID = 'ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList'
     PAGE_NAV_CLASS = 'aca_pagination'  # class name of page navigation row at the bottom of the
     UNFOLD_BUTTON_XPATH = '//h1/a[@class="NotShowLoading"]'
-    NEXT_BUTTON_XPATH = '//[contains(text(), "Next >")]'
+    NEXT_BUTTON_XPATH = '//*[contains(text(), "Next >")]'
 
 
 class DetailedHeader(Enum):

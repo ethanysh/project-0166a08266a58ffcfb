@@ -212,7 +212,7 @@ def scrape_details(driver: webdriver, url) -> dict:
         for path in xpath:
             obj.update(get_detail(driver, detail, path))
     # time.sleep(3)
-    driver.close()
+    # driver.close()
     return obj
 
 
@@ -239,7 +239,7 @@ def scrape_content(driver: webdriver, headers: list, content_rows: list) -> list
             pass  # pass to the next permit if details page is not available
         else:
             obj_detail = scrape_details(driver, url)  # scrape off the detail page
-            driver.switch_to_window(driver.window_handles[0])  # get back to the table list
+            # driver.switch_to_window(driver.window_handles[0])  # get back to the table list
         obj = dict(zip(headers, vals))
         obj.update(obj_detail)
         obj.update({DetailedHeader.ENTRY_DATE.value: datetime.now()})  # add timestamp
