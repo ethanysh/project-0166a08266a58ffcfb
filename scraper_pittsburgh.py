@@ -24,7 +24,7 @@ class Element(Enum):
     SEARCH_NOW_XPATH = '//a[*="Search now"]'
     TABLE_XPATH = '//table[@bordercolor="#E5E5E5"][2]'
     OPEN_NEW_WINDOW_JS = 'window.open('');'
-    NEXT_BUTTON_XPATH = '//a[contains(text(), "Next")]'
+    NEXT_BUTTON_XPATH = '//a[./text()="Next"]'
 
 
 class Headers(Enum):
@@ -197,7 +197,7 @@ def get_detail(driver: webdriver, detail: str, xpath: str) -> dict:
     return obj
 
 
-def scrape_details(driver: webdriver, url: str) -> dict:
+def scrape_details(driver: webdriver, url: str) -> [dict, None]:
     obj = dict()
     driver.switch_to.window(driver.window_handles[1])
     driver.get(url)  # open the details page
@@ -217,7 +217,7 @@ def scrape_details(driver: webdriver, url: str) -> dict:
         obj.update({Headers.ENTRY_DATE.value: datetime.now()})
         return obj
     else:
-        return dict()
+        return None
 
 
 def click_next(driver: webdriver, counter: int) -> bool:
@@ -234,6 +234,8 @@ def click_next(driver: webdriver, counter: int) -> bool:
 
 
 def scrape_content(driver: webdriver, index: str, days_to_scrape=0) -> list:
+    driver.execute_script(Element.FREE_SEARCH_JS.value)
+    driver.execute_script(Element.DOCUMENT_SEARCH_JS.value)
     Select(driver.find_element_by_name(Element.OFFICE_ID_NAME.value)).select_by_value(index)
     to_day_input = driver.find_element_by_name(Element.TO_DATE_NAME.value)
     to_day_value = to_day_input.get_attribute("value")
@@ -253,7 +255,8 @@ def scrape_content(driver: webdriver, index: str, days_to_scrape=0) -> list:
         driver.execute_script(Element.OPEN_NEW_WINDOW_JS.value)  # open a new window
         for url in url_list:
             obj = scrape_details(driver, url)
-            objs.append(obj)
+            if obj is not None:
+                objs.append(obj)
         driver.close()
         driver.switch_to.window(driver.window_handles[0])
         counter += 1
@@ -263,8 +266,6 @@ def scrape_content(driver: webdriver, index: str, days_to_scrape=0) -> list:
 def scraper_pittsburgh(chrome_path: str, url='https://pa_allegheny.uslandrecords.com/palr/') -> dict:
     driver = webdriver.Chrome(chrome_path)
     driver.get(url)
-    driver.execute_script(Element.FREE_SEARCH_JS.value)
-    driver.execute_script(Element.DOCUMENT_SEARCH_JS.value)
     deeds = scrape_content(driver, Element.DEEDS_VALUE.value)
     mortgage = scrape_content(driver, Element.MORTGAGES_VALUE.value)
     obj = {Element.DEEDS_NAME.value: deeds,
