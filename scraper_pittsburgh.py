@@ -123,31 +123,13 @@ def wait_for_elements_load(driver: webdriver, by_method: By, method_val: str, ti
         return elements
 
 
-def wait_for_staleness(driver, element_identifier, timeout=120):
-    """
-    The function waits until the old web element detaches the DOM after loading a new page. Otherwise, the script won't
-    get the new element and the function raises TimeOut Exception.
-    :param driver: the web driver in use
-    :param element_id: the id of the web element to be inspected
-    :param timeout: wait a timeout period of time for the web element to detach the DOM, defaulted to 120 seconds.
-    :return: raise exceptions and exit or no returns
-    """
-    try:
-        WebDriverWait(driver, timeout).until(
-            EC.staleness_of(driver.find_element_by_xpath(element_identifier))
-        )
-    except Exception as e:
-        print(e)
-        exit(1)
-
-
 def get_table(driver: webdriver, table_identifier: str) -> list:
     """
     The function gets the table to be scraped by `talbe_id`.
     Tips: after loading a new page, use `wait_for_staleness()` to wait until the old web element to detach the DOM
         to grab the new element. In case `wait_for_staleness()` not working, use `time.sleep()` in below instead.
+    :param table_identifier: value in method to identify the table element, can be `id`, `name`, `class`, `xpath` etc.
     :param driver: the web driver in use
-    :param table_id: the `id` of the `table` element to be scraped
     :return: function returns a list of row elements int the table, represented by `tr` tags
     """
     # time.sleep(3)
@@ -156,7 +138,12 @@ def get_table(driver: webdriver, table_identifier: str) -> list:
     return table_rows
 
 
-def get_url_list(table_content):
+def get_url_list(table_content: list) -> list:
+    """
+    The function gets the list of urls of details page of each object to be scraped on the current page
+    :param table_content: a list of selenium objects represent rows of the table to be scraped
+    :return: a list of urls
+    """
     urls = []
     for row in table_content:
         try:
@@ -198,6 +185,12 @@ def get_detail(driver: webdriver, detail: str, xpath: str) -> dict:
 
 
 def scrape_details(driver: webdriver, url: str) -> [dict, None]:
+    """
+    The function scrapes data on the details page of the object
+    :param driver: the webdriver in use
+    :param url: the url of the details page for the object
+    :return: a dict of attribute value pairs of the object satisfies given requirements or None if not.
+    """
     obj = dict()
     driver.switch_to.window(driver.window_handles[1])
     driver.get(url)  # open the details page
@@ -221,6 +214,12 @@ def scrape_details(driver: webdriver, url: str) -> [dict, None]:
 
 
 def click_next(driver: webdriver, counter: int) -> bool:
+    """
+    The function clicks the next page
+    :param driver: the webdriver in use
+    :param counter: the function does nothing if the script is on the first page (`counter` is 0) of the table
+    :return: `True` if the next button is successfully clicked, `False` if otherwise
+    """
     if counter == 0:
         return True
     else:
@@ -234,6 +233,16 @@ def click_next(driver: webdriver, counter: int) -> bool:
 
 
 def scrape_content(driver: webdriver, index: str, days_to_scrape=0) -> list:
+    """
+    The function scrapes the each and every object on the current page
+    :param driver: the webdriver in use
+    :param index: the value of the `option` attribute in the drop down list located in the search box. This is
+                  to identify the type of the objects to be scraped. `60` for `deeds` and `61` for mortgage.
+                  Check the html code of the search box to find out all the values.
+    :param days_to_scrape:days prior to today to start scraping. 1 means from yesterday to today, 2 days in total.
+                           The value is defaulted to scrape the data for only 1 day, that is today only.
+    :return: a list of all the objects in JSON-like format that satisfying a set of given requirements.
+    """
     driver.execute_script(Element.FREE_SEARCH_JS.value)
     driver.execute_script(Element.DOCUMENT_SEARCH_JS.value)
     Select(driver.find_element_by_name(Element.OFFICE_ID_NAME.value)).select_by_value(index)
@@ -264,6 +273,12 @@ def scrape_content(driver: webdriver, index: str, days_to_scrape=0) -> list:
 
 
 def scraper_pittsburgh(chrome_path: str, url='https://pa_allegheny.uslandrecords.com/palr/') -> dict:
+    """
+    The actual scraping process. The function scrapes `deeds` and `mortgage` objects off the website.
+    :param chrome_path: the location where the `chrome driver` is stored
+    :param url: the url of the website to be scraped
+    :return: a list contains a set of `deeds` objects and a set of `mortgage` objects that satisfying a given criteria.
+    """
     driver = webdriver.Chrome(chrome_path)
     driver.get(url)
     deeds = scrape_content(driver, Element.DEEDS_VALUE.value)
